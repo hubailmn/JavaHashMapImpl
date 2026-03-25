@@ -66,6 +66,7 @@ public class HashMap<K, V> implements Map<K, V> {
         int i = hashKey1;
 
         while (table[i] != null) {
+            // it will skip the Removed slot...and will not place the entry on the slot
             if (table[i] != EMPTY_ENTRY && table[i].getKey().equals(key)) {
                 V oldValue = table[i].getValue();
                 table[i].setValue(value);
