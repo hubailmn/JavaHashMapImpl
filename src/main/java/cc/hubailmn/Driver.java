@@ -10,7 +10,7 @@ public class Driver {
     private static final Random rand = new Random();
 
     public static void main(String[] args) {
-        HashMap<Integer, String> map = new HashMap<>() {
+        HashMap<Integer, String> map = new HashMap<>();/*{
             @Override
             public String toString() {
                 if (isEmpty()) return "{}";
@@ -31,7 +31,7 @@ public class Driver {
                 sb.append("\n}");
                 return sb.toString();
             }
-        };
+        };*/
 
 
         insetElements(map);
@@ -43,9 +43,9 @@ public class Driver {
     }
 
     private static void insetElements(HashMap<Integer, String> map) {
-        int init = 1;
-        for (int i = init; i <= init + 100; i++) {
-            int random = rand.nextInt(100);
+        int random = 1;
+        for (int i = random; i <= random + 100; i++) {
+            random = rand.nextInt(1_000);
             map.put(random, random + " Element");
         }
     }

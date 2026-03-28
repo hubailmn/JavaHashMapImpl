@@ -144,11 +144,11 @@ public class HashMap<K, V> implements Map<K, V> {
         List<Entry<K, V>> entries = new ArrayList<>();
 
         for (int i = 0; i < capacity; i++) {
-//            if (table[i] != null && table[i] != EMPTY_ENTRY) {
-//                entries.add(table[i]);
-//            }
+            if (table[i] != null && table[i] != EMPTY_ENTRY) {
+                entries.add(table[i]);
+            }
 
-            entries.add(table[i] != null ? table[i] : EMPTY_ENTRY);
+//            entries.add(table[i] != null ? table[i] : EMPTY_ENTRY);
         }
 
         return entries;
@@ -212,12 +212,18 @@ public class HashMap<K, V> implements Map<K, V> {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
 
-        for (Entry<K, V> entry : this.entrySet()) {
-            sb.append("\n\t")
-                    .append("{")
-                    .append("key=\"").append(entry.getKey()).append("\", ")
-                    .append("value=").append(entry.getValue()).append("\"")
-                    .append("}");
+        for (int i = 0; i < capacity; i++) {
+            if (table[i] != null && table[i] != EMPTY_ENTRY) {
+                sb.append("\n\t")
+                        .append("{")
+                        .append("key=\"").append(table[i].getKey()).append("\", ")
+                        .append("value=").append(table[i].getValue()).append("\"")
+                        .append("}");
+
+                if (i != capacity - 1) {
+                    sb.append(", ");
+                }
+            }
 
         }
 
