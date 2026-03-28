@@ -15,13 +15,13 @@ public class MapEntry<K, V> implements Entry<K, V> {
         return key;
     }
 
+    public void setKey(K key) {
+        this.key = key;
+    }
+
     @Override
     public V getValue() {
         return value;
-    }
-
-    public void setKey(K key) {
-        this.key = key;
     }
 
     public void setValue(V value) {

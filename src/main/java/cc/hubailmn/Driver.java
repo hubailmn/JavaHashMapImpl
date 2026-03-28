@@ -46,7 +46,7 @@ public class Driver {
         int init = 1;
         for (int i = init; i <= init + 100; i++) {
             int random = rand.nextInt(100);
-            map.put(i, i + " Element");
+            map.put(random, random + " Element");
         }
     }
 
@@ -56,7 +56,7 @@ public class Driver {
         }
     }
 
-    private static void printMap(HashMap<Integer, String> map) {
+    public static void printMap(HashMap<Integer, String> map) {
 
         System.out.println("\n==--==--==--==--==--");
         System.out.println("Map Capacity: " + map.capacity());

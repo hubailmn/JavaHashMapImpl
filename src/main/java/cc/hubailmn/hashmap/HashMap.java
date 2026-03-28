@@ -5,24 +5,27 @@ import java.util.List;
 
 public class HashMap<K, V> implements Map<K, V> {
 
+    private final MapEntry<K, V> EMPTY_ENTRY = new MapEntry<>(null, null);
+    private final int DEFAULT_CAPACITY = 13;
+
     private int size;
     private int capacity;
+
     private MapEntry<K, V>[] table;
-    private final MapEntry<K, V> EMPTY_ENTRY = new MapEntry<>(null, null);
 
     public HashMap() {
         size = 0;
-        capacity = 17;
+        capacity = DEFAULT_CAPACITY;
         table = new MapEntry[capacity];
+    }
+
+    public int capacity() {
+        return capacity;
     }
 
     @Override
     public int size() {
         return size;
-    }
-
-    public int capacity() {
-        return capacity;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public V get(K key) {
-        if (key == null) throw new IllegalArgumentException("key is null");
+        if (key == null) throw new IllegalArgumentException("key cant be null.");
 
         int hashKey1 = Math.abs(key.hashCode() % capacity);
         int hashKey2 = Math.abs(7 - key.hashCode() % 7);
@@ -53,10 +56,13 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public V put(K key, V value) {
-        if (key == null) throw new IllegalArgumentException("key is null");
-        if (value == null) throw new IllegalArgumentException("value is null");
+        if (key == null) throw new IllegalArgumentException("key cant be null.");
+        if (value == null) throw new IllegalArgumentException("value cant be null.");
 
-        if (capacity * 0.7 <= size) resize();
+        if ((double) size / capacity >= 0.75) {
+//            System.out.println("EXpanding...");
+            resize();
+        }
 
         MapEntry<K, V> newEntry = new MapEntry<>(key, value);
 
@@ -66,7 +72,6 @@ public class HashMap<K, V> implements Map<K, V> {
         int i = hashKey1;
 
         while (table[i] != null) {
-            // it will skip the Removed slot...and will not place the entry on the slot
             if (table[i] != EMPTY_ENTRY && table[i].getKey().equals(key)) {
                 V oldValue = table[i].getValue();
                 table[i].setValue(value);
@@ -77,14 +82,19 @@ public class HashMap<K, V> implements Map<K, V> {
         }
 
         table[i] = newEntry;
-        size++;
 
+        size++;
         return null;
     }
 
     @Override
     public V remove(K key) {
-        if (key == null) throw new IllegalArgumentException("key is null");
+        if (key == null) throw new IllegalArgumentException("key cant be null.");
+
+        if ((double) size < capacity * 0.25 && capacity > DEFAULT_CAPACITY) {
+//            System.out.println("Shrinking...");
+            resize();
+        }
 
         int hashKey1 = Math.abs(key.hashCode() % capacity);
         int hashKey2 = Math.abs(7 - key.hashCode() % 7);
@@ -103,6 +113,7 @@ public class HashMap<K, V> implements Map<K, V> {
             if (i == hashKey1) break;
         }
 
+        size--;
         return null;
     }
 
@@ -133,48 +144,66 @@ public class HashMap<K, V> implements Map<K, V> {
         List<Entry<K, V>> entries = new ArrayList<>();
 
         for (int i = 0; i < capacity; i++) {
-            if (table[i] != null && table[i] != EMPTY_ENTRY) {
-                entries.add(table[i]);
-            }
+//            if (table[i] != null && table[i] != EMPTY_ENTRY) {
+//                entries.add(table[i]);
+//            }
+
+            entries.add(table[i] != null ? table[i] : EMPTY_ENTRY);
         }
 
         return entries;
     }
 
     private void resize() {
-        Iterable<Entry<K, V>> oldTable = entrySet();
+        double factor = (double) size / capacity;
 
-        capacity = nextPrime();
+        if (factor > 0.75) {
+            capacity = findNextPrime(capacity * 2);
+        } else if (factor < 0.25 && capacity > DEFAULT_CAPACITY) {
+            capacity = findNextPrime(capacity / 2);
+        } else {
+            return;
+        }
+
+        Entry<K, V>[] oldTable = table;
         table = new MapEntry[capacity];
         size = 0;
 
-        for (Entry<K, V> entry : oldTable) {
-            if (entry != null) {
-                put(entry.getKey(), entry.getValue());
+        for (Entry<K, V> temp : oldTable) {
+            if (temp != null && temp != EMPTY_ENTRY) {
+                put(temp.getKey(), temp.getValue());
             }
         }
     }
 
-    private int nextPrime() {
-        int next = capacity * 2;
-
-        while (!isPrime(next)) {
-            next++;
+    private int findNextPrime(int number) {
+        while (!isPrime(number)) {
+            if (number % 2 == 0) {
+                number++;
+            } else {
+                number += 2;
+            }
         }
 
-        return next;
+        return number;
     }
 
-    private static boolean isPrime(int n) {
-        if (n < 2) return false;
+    private boolean isPrime(int number) {
+        if (number <= 1) throw new IllegalArgumentException("Number must be positive and greater than 1.");
+        if (number == 2) return true;
+        if (number % 2 == 0) return false;
 
-        for (int i = 2; i * i <= n; i++) {
-            if (n % i == 0) return false;
+        double sqr = Math.sqrt(number);
+        double result = Math.ceil(sqr);
+
+        for (int i = 2; i <= result; i++) {
+            if (number % i == 0) {
+                return false;
+            }
         }
 
         return true;
     }
-
 
     @Override
     public String toString() {
