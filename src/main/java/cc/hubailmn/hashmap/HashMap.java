@@ -38,7 +38,7 @@ public class HashMap<K, V> implements Map<K, V> {
         if (key == null) throw new IllegalArgumentException("key cant be null.");
 
         int hashKey1 = Math.abs(key.hashCode() % capacity);
-        int hashKey2 = Math.abs(7 - key.hashCode() % 7);
+        int hashKey2 = 7 - (Math.abs(key.hashCode()) % 7);
 
         int i = hashKey1;
 
@@ -60,29 +60,32 @@ public class HashMap<K, V> implements Map<K, V> {
         if (value == null) throw new IllegalArgumentException("value cant be null.");
 
         if ((double) size / capacity >= 0.75) {
-//            System.out.println("EXpanding...");
             resize();
         }
 
         MapEntry<K, V> newEntry = new MapEntry<>(key, value);
 
         int hashKey1 = Math.abs(key.hashCode() % capacity);
-        int hashKey2 = Math.abs(7 - key.hashCode() % 7);
+        int hashKey2 = 7 - (Math.abs(key.hashCode()) % 7);
 
         int i = hashKey1;
+        int available = -1;
 
         while (table[i] != null) {
-            if (table[i] != EMPTY_ENTRY && table[i].getKey().equals(key)) {
+            if (table[i] == EMPTY_ENTRY) {
+                if (available == -1) available = i;
+            } else if (table[i].getKey().equals(key)) {
                 V oldValue = table[i].getValue();
                 table[i].setValue(value);
                 return oldValue;
             }
 
             i = (i + hashKey2) % capacity;
+            if (i == hashKey1) break;
         }
 
-        table[i] = newEntry;
-
+        int index = (available != -1) ? available : i;
+        table[index] = newEntry;
         size++;
         return null;
     }
@@ -92,12 +95,11 @@ public class HashMap<K, V> implements Map<K, V> {
         if (key == null) throw new IllegalArgumentException("key cant be null.");
 
         if ((double) size < capacity * 0.25 && capacity > DEFAULT_CAPACITY) {
-//            System.out.println("Shrinking...");
             resize();
         }
 
         int hashKey1 = Math.abs(key.hashCode() % capacity);
-        int hashKey2 = Math.abs(7 - key.hashCode() % 7);
+        int hashKey2 = 7 - (Math.abs(key.hashCode()) % 7);
 
         int i = hashKey1;
 
@@ -113,7 +115,6 @@ public class HashMap<K, V> implements Map<K, V> {
             if (i == hashKey1) break;
         }
 
-        size--;
         return null;
     }
 
@@ -147,8 +148,6 @@ public class HashMap<K, V> implements Map<K, V> {
             if (table[i] != null && table[i] != EMPTY_ENTRY) {
                 entries.add(table[i]);
             }
-
-//            entries.add(table[i] != null ? table[i] : EMPTY_ENTRY);
         }
 
         return entries;
@@ -160,19 +159,36 @@ public class HashMap<K, V> implements Map<K, V> {
         if (factor > 0.75) {
             capacity = findNextPrime(capacity * 2);
         } else if (factor < 0.25 && capacity > DEFAULT_CAPACITY) {
-            capacity = findNextPrime(capacity / 2);
+            int newCapacity = capacity / 2;
+            capacity = findNextPrime(newCapacity > DEFAULT_CAPACITY ? newCapacity : DEFAULT_CAPACITY);
         } else {
             return;
         }
 
+        remap();
+    }
+
+    private void remap() {
         Entry<K, V>[] oldTable = table;
         table = new MapEntry[capacity];
         size = 0;
 
         for (Entry<K, V> temp : oldTable) {
-            if (temp != null && temp != EMPTY_ENTRY) {
-                put(temp.getKey(), temp.getValue());
+            if (temp == null || temp == EMPTY_ENTRY) continue;
+            MapEntry<K, V> newEntry = new MapEntry<>(temp.getKey(), temp.getValue());
+
+            int hashKey1 = Math.abs(temp.getKey().hashCode() % capacity);
+            int hashKey2 = 7 - (Math.abs(temp.getKey().hashCode()) % 7);
+
+            int i = hashKey1;
+
+            while (table[i] != null) {
+                i = (i + hashKey2) % capacity;
+                if (i == hashKey1) break;
             }
+
+            table[i] = newEntry;
+            size++;
         }
     }
 
@@ -213,7 +229,11 @@ public class HashMap<K, V> implements Map<K, V> {
         sb.append("{");
 
         for (int i = 0; i < capacity; i++) {
-            if (table[i] != null && table[i] != EMPTY_ENTRY) {
+            if (table[i] == null) {
+                table[i] = EMPTY_ENTRY;
+            }
+
+            if (table[i] != null /*&& table[i] != EMPTY_ENTRY*/) {
                 sb.append("\n\t")
                         .append("{")
                         .append("key=\"").append(table[i].getKey()).append("\", ")

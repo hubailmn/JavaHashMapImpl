@@ -10,29 +10,7 @@ public class Driver {
     private static final Random rand = new Random();
 
     public static void main(String[] args) {
-        HashMap<Integer, String> map = new HashMap<>();/*{
-            @Override
-            public String toString() {
-                if (isEmpty()) return "{}";
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("{");
-
-                int i = 1;
-                for (Entry<Integer, String> entry : this.entrySet()) {
-                    sb.append("\n\t").append(String.format("%02d", i)).append("=")
-                            .append("{")
-                            .append("key=\"").append(entry.getKey()).append("\", ")
-                            .append("value=").append(entry.getValue()).append("\"")
-                            .append("}");
-                    i++;
-                }
-
-                sb.append("\n}");
-                return sb.toString();
-            }
-        };*/
-
+        HashMap<Integer, String> map = new HashMap<>();
 
         insetElements(map);
         printMap(map);
@@ -40,19 +18,26 @@ public class Driver {
         removeElements(map);
         printMap(map);
 
+        int[] nums = {18, 41, 22, 44, 59, 32, 31, 73};
+
+        for (int num : nums) {
+            map.put(num, num + " Element");
+        }
+
+        printMap(map);
     }
 
     private static void insetElements(HashMap<Integer, String> map) {
         int random = 1;
         for (int i = random; i <= random + 100; i++) {
             random = rand.nextInt(1_000);
-            map.put(random, random + " Element");
+            var added = map.put(random, random + " Element");
         }
     }
 
     private static void removeElements(HashMap<Integer, String> map) {
         for (Entry<Integer, String> integerStringEntry : map.entrySet()) {
-            map.remove(integerStringEntry.getKey());
+            var removed = map.remove(integerStringEntry.getKey());
         }
     }
 
